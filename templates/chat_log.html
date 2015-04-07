@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+<title>The Homobox - Chat Log</title>
+</head>
+<body>
+<div class=page>
+    <a href="{{ url_for('index') }}"><h1>The Homobox</h1></a>
+{% if session.logged_in %}
+    <hr>
+    <div class="shoutbox">
+        <p><a href="{{ url_for('chat_log', amount=amount*2) }}">more</a></p>
+        <div id="shoutbox-content">
+    {% for shout in shouts %}
+            <p id="single-shout">[{{ shout[2] }}] {{ shout[0] }}: {{ shout[1] }}</p>
+    {% endfor %}
+        </div>
+    </div>
+{% endif %}
+</div>
+</body>
+</html>

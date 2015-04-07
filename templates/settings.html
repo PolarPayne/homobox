@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+<title>The Homobox - Settings</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class=page>
+    <a href="{{ url_for('index') }}"><h1>The Homobox</h1></a>
+    <hr>
+{% if session.admin %}
+    <div class="admin">
+        <form action="" method="post">
+            <h2>Create a new user</h2>
+            <input type="hidden" name="type" value="create_user">
+            <p>Name: <input type="text" name="name" autocomplete="off"></p>
+            <p>Password: <input type="password" name="password"></p>
+            <p>Admin: <input type="checkbox" name="admin" value="yes"></p>
+            <input type="submit" value="Create">
+        </form>
+    </div>
+{% endif %}
+    <hr>
+{% if session.logged_in %}
+    <div class="settings">
+        <form action="" method="post">
+            <h2>Change password</h2>
+            <input type="hidden" name="type" value="change_password">
+            <p>Current password: <input type="password" name="old_password"></p>
+            <p>New password: <input type="password" name="new_password"></p>
+            <p>New password again: <input type="password" name="new_password_again"></p>
+            <input type="submit" value="Change">
+        </form>
+    </div>
+{% endif %}
+</div>
+</body>
+</html>

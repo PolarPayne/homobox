@@ -3,9 +3,9 @@ from flask.ext.bcrypt import Bcrypt
 import sqlite3
 
 # config
-DATABASE = 'test.db'
-DEBUG = True
-SECRET_KEY = 'development key'
+DATABASE = 'data.db'
+DEBUG = False
+SECRET_KEY = 'aesvujzdloaeorvjhnaruoh'
 
 # setup
 app = Flask(__name__)
@@ -54,7 +54,7 @@ def index():
             '''
 
     shouts = []
-    for shout in query_db('select name, shout, strftime(\'%Y-%m-%d %H:%M\', post_time) from users natural join shouts order by shout_id desc limit 10'):
+    for shout in query_db('select name, shout, strftime(\'%Y-%m-%d %H:%M\', post_time) from users natural join shouts order by shout_id desc limit 15'):
         shouts.insert(0, (shout[0], shout[1], shout[2]))
     return render_template('index.html', shouts=shouts)
 
@@ -133,4 +133,4 @@ def generate_password_hash(name, password):
     return bcrypt.generate_password_hash(name + password)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0')

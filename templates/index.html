@@ -13,7 +13,7 @@ window.onload = function(){
 
     setInterval(function() {
         $('#shoutbox-content').load(document.URL +  ' #shoutbox-content');    
-    }, 1000);
+    }, 2000);
 }
 </script>
 </head>
@@ -30,9 +30,7 @@ window.onload = function(){
             <input type="submit" value="Login">
         </form>
 {% else %}
-    {% if session.admin %}
         <p><a href="{{ url_for('settings') }}">Settings</a></p>
-    {% endif %}
         <p>Logged in as {{ session.name }}</p>
         <p><a href="{{ url_for('logout') }}">Logout</a></p>
 {% endif %}

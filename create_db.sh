@@ -1,1 +1,1 @@
-sqlite3 test.db < schema.sql
+sqlite3 $1.db < schema.sql

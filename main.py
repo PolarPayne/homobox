@@ -38,7 +38,7 @@ def index():
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST' and request.form['type'] == 'login':
+    if request.method == 'POST' and 'login' in request.form and request.form['type'] == 'login':
         name = request.form['name']
         password = request.form['password']
         # validate the user
@@ -56,11 +56,11 @@ def login():
 
 @app.route('/chat', methods=['GET', 'POST'])
 def chat():
-    if request.method == 'POST' and session['logged_in'] and request.form['type'] == 'shout':
+    if request.method == 'POST' and session.get('logged_in', False) and request.form['type'] == 'shout':
         update_db('insert into shouts(user_id, shout, post_time) values (?, ?, datetime(\'now\', \'localtime\'))', [session['user_id'], request.form['content']])
         return redirect(url_for('chat'))
 
-    if session['logged_in']:
+    if session.get('logged_in', False):
         shouts = []
         for shout in query_db('select name, shout, strftime(\'%Y-%m-%d %H:%M\', post_time) from users natural join shouts order by shout_id desc limit 15'):
             shouts.insert(0, (shout[0], shout[1], shout[2]))
@@ -71,7 +71,7 @@ def chat():
 @app.route('/chat_log')
 @app.route('/chat_log/<int:amount>')
 def chat_log(amount=50):
-    if session['logged_in']:
+    if session.get('logged_in', False):
         shouts = []
         for shout in query_db('select name, shout, strftime(\'%Y-%m-%d %H:%M\', post_time) from users natural join shouts limit ?', [amount]):
             shouts.insert(0, (shout[0], shout[1], shout[2]))
@@ -92,7 +92,7 @@ def logout():
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
     if request.method == 'POST':
-        if session['admin']:
+        if session.get('admin', False):
             if request.form['type'] == 'create_user':
                 name = request.form['name']
                 password = request.form['password']
@@ -106,7 +106,7 @@ def settings():
                     flash('User created.')
                 return redirect(url_for('settings'))
 
-        if session['logged_in']:
+        if session.get('logged_in', False):
             if request.form['type'] == 'change_password':
                 if not change_password(session['user_id'], request.form['old_password'], request.form['new_password'], request.form['new_password_again']):
                     flash('Something went wrong, password was not changed.')
@@ -114,8 +114,10 @@ def settings():
                     flash('Password changed.')
                 return redirect(url_for('settings'))
 
-    return render_template('settings.html')
+    if session.get('logged_in', False):
+        return render_template('settings.html')
 
+    return redirect(url_for('index'))
 
 def connect_db():
     return sqlite3.connect(app.config['DATABASE'])

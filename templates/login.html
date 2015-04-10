@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% set active_page = "login" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<form class="form" action="" method="post">
+    <input type="hidden" name="type" value="login">
+    <p class="name">Name: <input type="text" name="name" autocomplete="off"></p>
+    <p class="password">Password: <input type="password" name="password" autocomplete="off"></p>
+    <p class="submit"><input type="submit" value="Login"></p>
+</form>
+{% endblock %}

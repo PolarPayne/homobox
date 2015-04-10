@@ -1,49 +1,6 @@
 {% extends "base.html" %}
+{% set active_page = "index" %}
 {% block title %}Home{% endblock %}
-{% block head %}
-    {{ super() }}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script>
-    window.onload = function(){
-        var text_input = document.getElementById('shout');
-        text_input.focus();
-        text_input.select();
-
-        setInterval(function() {
-            $('#shoutbox-content').load(document.URL +  ' #shoutbox-content');
-        }, 2000);
-    }
-    </script>
-{% endblock %}
 {% block content %}
-<div class=login>
-{% if not session.logged_in %}
-        <form action="" method="post">
-            <input type="hidden" name="type" value="login">
-            <p>Name: <input type="text" name="name" autocomplete="off"></p>
-            <p>Password: <input type="password" name="password"></p>
-            <input type="submit" value="Login">
-        </form>
-{% else %}
-        <p><a href="{{ url_for('settings') }}">Settings</a></p>
-        <p>Logged in as {{ session.name }}</p>
-        <p><a href="{{ url_for('logout') }}">Logout</a></p>
-{% endif %}
-    </div>
-    <hr>
-{% if session.logged_in %}
-    <div class="shoutbox">
-        <p><a href="{{ url_for('chat_log', amount=50) }}">Chat log</a></p>
-        <div id="shoutbox-content">
-    {% for shout in shouts %}
-            <p id="single-shout">[{{ shout[2] }}] {{ shout[0] }}: {{ shout[1] }}</p>
-    {% endfor %}
-        </div>
-        <form action="" method="post">
-            <input type="hidden" name="type" value="shout">
-            <input id="shout" type="text" name="content" autocomplete="off">
-            <input type="submit" value="Send">
-        </form>
-    </div>
-{% endif %}
+    <p>The weather is so fucking sunny!</p>
 {% endblock %}

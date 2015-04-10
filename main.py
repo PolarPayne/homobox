@@ -17,33 +17,13 @@ bcrypt = Bcrypt(app)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # first time setup
     if request.method == 'POST':
-        # first time setup
         if request.form['type'] == 'setup' and query_db('select count(*) from users', one=True)[0] == 0:
             name = request.form['name']
             password = request.form['password']
             update_db('insert into users(name, password, admin) values (?, ?, ?)', [name, bcrypt.generate_password_hash(name + password), True])
             return redirect(url_for('index'))
-
-        # login
-        if request.form['type'] == 'login':
-            name = request.form['name']
-            password = request.form['password']
-            # validate the user
-            user = query_db('select user_id, name, password, admin from users where name = ?', [name], one=True)
-            if check_password(user[0], password):
-                session['user_id'] = user[0]
-                session['name'] = user[1]
-                session['admin'] = bool(user[3])
-                session['logged_in'] = True
-                return redirect(url_for('index'))
-
-        if session['logged_in']:
-            if request.form['type'] == 'shout':
-                update_db('insert into shouts(user_id, shout, post_time) values (?, ?, datetime(\'now\', \'localtime\'))', [session['user_id'], request.form['content']])
-                return redirect(url_for('index'))
-
-    # first time setup
     if query_db('select count(*) from users', one=True)[0] == 0:
         return '''
             <form action="" method="post">
@@ -55,13 +35,40 @@ def index():
             </form>
             '''
 
-    shouts = []
-    for shout in query_db('select name, shout, strftime(\'%Y-%m-%d %H:%M\', post_time) from users natural join shouts order by shout_id desc limit 15'):
-        shouts.insert(0, (shout[0], shout[1], shout[2]))
-    return render_template('index.html', shouts=shouts)
+    return render_template('index.html')
 
 
-@app.route('/chat_log')
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST' and request.form['type'] == 'login':
+        name = request.form['name']
+        password = request.form['password']
+        # validate the user
+        user = query_db('select user_id, name, password, admin from users where name = ?', [name], one=True)
+        if check_password(user[0], password):
+            session['user_id'] = user[0]
+            session['name'] = user[1]
+            session['admin'] = bool(user[3])
+            session['logged_in'] = True
+            return redirect(url_for('index'))
+
+    return render_template('login.html')
+
+@app.route('/chat', methods=['GET', 'POST'])
+def chat():
+    if request.method == 'POST' and session['logged_in'] and request.form['type'] == 'shout':
+        update_db('insert into shouts(user_id, shout, post_time) values (?, ?, datetime(\'now\', \'localtime\'))', [session['user_id'], request.form['content']])
+        return redirect(url_for('chat'))
+
+    if session['logged_in']:
+        shouts = []
+        for shout in query_db('select name, shout, strftime(\'%Y-%m-%d %H:%M\', post_time) from users natural join shouts order by shout_id desc limit 15'):
+            shouts.insert(0, (shout[0], shout[1], shout[2]))
+        return render_template('chat.html', shouts=shouts)
+
+    return redirect(url_for('index'))
+
+@app.route('/chat_log/')
 @app.route('/chat_log/<int:amount>')
 def chat_log(amount=50):
     if session['logged_in']:
@@ -69,6 +76,7 @@ def chat_log(amount=50):
         for shout in query_db('select name, shout, strftime(\'%Y-%m-%d %H:%M\', post_time) from users natural join shouts limit ?', [amount]):
             shouts.insert(0, (shout[0], shout[1], shout[2]))
         return render_template('chat_log.html', shouts=shouts, amount=amount)
+
     return redirect(url_for('index'))
 
 

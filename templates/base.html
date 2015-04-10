@@ -11,9 +11,27 @@
         <h1>Homobox</h1>
         <h2>{{ self.title() }}</h2>
     </div>
-    <div id="navigation">
-        <!-- Navigation stuff -->
-    </div>
+
+    {% if session["logged_in"] %}
+    <div id="logged_in">Logged in as {{ session["name"] }}</div>
+    {% endif %}
+
+    <!-- Navbar -->
+    {% set navigation_bar = [
+        ("index", "Home"),
+        ("chat", "Chat"),
+        ("chat_log", "Chat Log"),
+        ("login", "Login"),
+        ("logout", "Logout")
+        ] %}
+    {% set active_page = active_page|default("index") %}
+    <ul id="navigation">
+            {% for id, caption in navigation_bar %}
+            <li{% if id == active_page %} class="active"{% endif %}>
+                <a href="{{ url_for(id)|e }}">{{ caption|e }}</a></li>
+            {% endfor %}
+    </ul>
+
     {% if get_flashed_messages()|length > 0 %}
     <div id="flashes">
         {% for message in get_flashed_messages() %}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% block head %}
+    <title>Homobox - {% block title %}{% endblock %}</title>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    {% endblock %}
+</head>
+<body>
+    <div id="title">
+        <h1>Homobox</h1>
+        <h2>{{ self.title() }}</h2>
+    </div>
+    <div id="navigation">
+        <!-- Navigation stuff -->
+    </div>
+    {% if get_flashed_messages()|length > 0 %}
+    <div id="flashes">
+        {% for message in get_flashed_messages() %}
+        <div class="message">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
+</body>

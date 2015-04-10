@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, url_for, render_template, request, g
+from flask import Flask, session, redirect, url_for, render_template, request, g, flash
 from flask.ext.bcrypt import Bcrypt
 import sqlite3
 
@@ -20,9 +20,7 @@ def index():
     # first time setup
     if request.method == 'POST':
         if request.form['type'] == 'setup' and query_db('select count(*) from users', one=True)[0] == 0:
-            name = request.form['name']
-            password = request.form['password']
-            update_db('insert into users(name, password, admin) values (?, ?, ?)', [name, bcrypt.generate_password_hash(name + password), True])
+            new_user(request.form['name'], request.form['password'], admin=True)
             return redirect(url_for('index'))
     if query_db('select count(*) from users', one=True)[0] == 0:
         return '''
@@ -50,8 +48,10 @@ def login():
             session['name'] = user[1]
             session['admin'] = bool(user[3])
             session['logged_in'] = True
+            flash('Logged in')
             return redirect(url_for('index'))
-
+        else:
+            flash('Name or password wrong.')
     return render_template('login.html')
 
 @app.route('/chat', methods=['GET', 'POST'])
@@ -68,7 +68,7 @@ def chat():
 
     return redirect(url_for('index'))
 
-@app.route('/chat_log/')
+@app.route('/chat_log')
 @app.route('/chat_log/<int:amount>')
 def chat_log(amount=50):
     if session['logged_in']:
@@ -96,19 +96,22 @@ def settings():
             if request.form['type'] == 'create_user':
                 name = request.form['name']
                 password = request.form['password']
+                # check if checkbox is checked (hehe)
                 admin = request.form.getlist('admin')
                 admin = admin[0] if len(admin) > 0 else ''
                 admin = (admin == 'yes')
-                update_db('insert into users(name, password, admin) values (?, ?, ?)', [name, generate_password_hash(name, password), admin])
+                if not new_user(name, password, admin=admin):
+                    flash('Name in use, or name and/or password too short.')
+                else:
+                    flash('User created.')
                 return redirect(url_for('settings'))
 
         if session['logged_in']:
             if request.form['type'] == 'change_password':
-                old_password = request.form['old_password']
-                new_password = request.form['new_password']
-                new_password_again = request.form['new_password_again']
-                if new_password == new_password_again and check_password(session['user_id'], old_password):
-                    update_db('update users set password = ? where user_id = ?', [generate_password_hash(session['name'], new_password), session['user_id']])
+                if not change_password(session['user_id'], request.form['old_password'], request.form['new_password'], request.form['new_password_again']):
+                    flash('Something went wrong, password was not changed.')
+                else:
+                    flash('Password changed.')
                 return redirect(url_for('settings'))
 
     return render_template('settings.html')
@@ -142,6 +145,20 @@ def query_db(query, args=(), one=False):
 def update_db(query, args=()):
     get_db().cursor().execute(query, args)
     get_db().commit()
+
+
+def new_user(name, password, admin=False):
+    if len(name) < 3 or len(password) < 8 or query_db('select count(*) from users where name = ?', [name], one=True)[0] > 0:
+        return False
+    update_db('insert into users(name, password, admin) values (?, ?, ?)', [name, bcrypt.generate_password_hash(name + password), admin])
+    return True
+
+
+def change_password(user_id, old_password, new_password, new_password_again):
+    if new_password == new_password_again and check_password(user_id, old_password):
+        update_db('update users set password = ? where user_id = ?', [generate_password_hash(session['name'], new_password), session['user_id']])
+        return True
+    return False
 
 
 def check_password(user_id, password):

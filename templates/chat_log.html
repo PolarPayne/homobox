@@ -4,7 +4,7 @@
 {% block content %}
     {% if session.logged_in %}
         <div class="shoutbox">
-            <p><a href="{{ url_for('chat_log', amount=amount*2) }}">more</a></p>
+            <p id="more"><a href="{{ url_for('chat_log', amount=amount*2) }}">more</a></p>
             <div id="shoutbox-content">
         {% for shout in shouts %}
                 <p class="single-shout">[{{ shout[2] }}] {{ shout[0] }}: {{ shout[1] }}</p>

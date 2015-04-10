@@ -108,7 +108,7 @@ def settings():
 
         if session.get('logged_in', False):
             if request.form['type'] == 'change_password':
-                if not change_password(session['user_id'], request.form['old_password'], request.form['new_password'], request.form['new_password_again']):
+                if not change_password(session.get('name', ''), session.get('user_id', ''), request.form['old_password'], request.form['new_password'], request.form['new_password_again']):
                     flash('Something went wrong, password was not changed.')
                 else:
                     flash('Password changed.')
@@ -156,9 +156,9 @@ def new_user(name, password, admin=False):
     return True
 
 
-def change_password(user_id, old_password, new_password, new_password_again):
+def change_password(name, user_id, old_password, new_password, new_password_again):
     if new_password == new_password_again and check_password(user_id, old_password):
-        update_db('update users set password = ? where user_id = ?', [generate_password_hash(session['name'], new_password), session['user_id']])
+        update_db('update users set password = ? where user_id = ?', [generate_password_hash(name, new_password), user_id])
         return True
     return False
 

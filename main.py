@@ -9,7 +9,8 @@ app.config.update(
     DATABASE=sys.argv[1],
     SECRET_KEY='aufgaofyawgfcjhavywefvakbfvaywe283rtfwegydbha',
     HOST='0.0.0.0',
-    PORT=5000
+    PORT=80,
+    DEBUG=False
 )
 
 bcrypt = Bcrypt(app)
@@ -38,7 +39,7 @@ def index():
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST' and 'login' in request.form and request.form['type'] == 'login':
+    if request.method == 'POST' and request.form['type'] == 'login':
         name = request.form['name']
         password = request.form['password']
         # validate the user
@@ -185,7 +186,4 @@ def generate_password_hash(name, password):
     return bcrypt.generate_password_hash(name + password)
 
 if __name__ == "__main__":
-    if len(sys.argv) > 2 and sys.argv[2] == 'debug':
-        app.run(debug=True, host='127.0.0.1', port=5000)
-    else:
-        app.run(debug=False, host=app.config['HOST'], port=app.config['PORT'])
+    app.run(host=app.config['HOST'], port=app.config['PORT'])
